@@ -94,3 +94,48 @@ def get_latest_prediction(db: Session, equipment_id: int):
         .limit(1)
     )
     return db.execute(stmt).scalars().first()
+
+def add_measurement_with_ts(
+    db: Session,
+    equipment_id: int,
+    ts,
+    temperature: float,
+    vibration: float,
+    operating_hours: float,
+    pressure: float | None = None,
+):
+    m = EquipmentMeasurement(
+        equipment_id=equipment_id,
+        ts=ts,
+        temperature=temperature,
+        vibration=vibration,
+        operating_hours=operating_hours,
+        pressure=pressure,
+    )
+    db.add(m)
+    db.commit()
+    db.refresh(m)
+    return m
+
+
+def save_health_index_with_ts(
+    db: Session,
+    equipment_id: int,
+    ts,
+    health_index: float,
+    temperature_score: float,
+    vibration_score: float,
+    hours_score: float,
+):
+    h = EquipmentHealthIndex(
+        equipment_id=equipment_id,
+        ts=ts,
+        health_index=health_index,
+        temperature_score=temperature_score,
+        vibration_score=vibration_score,
+        hours_score=hours_score,
+    )
+    db.add(h)
+    db.commit()
+    db.refresh(h)
+    return h

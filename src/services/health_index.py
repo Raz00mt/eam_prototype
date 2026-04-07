@@ -56,3 +56,12 @@ def its_forecast_curve_variant_b(
     dates = [start + timedelta(days=int(i)) for i in t]
 
     return pd.DataFrame({"date": dates, "its": its, "its_percent": its * 100})
+
+def its_status_color(its_percent: float) -> str:
+    if its_percent >= 80:
+        return "#16a34a"   # зелёный
+    if its_percent >= 60:
+        return "#eab308"   # жёлтый
+    if its_percent >= 40:
+        return "#f97316"   # оранжевый
+    return "#dc2626"       # красный

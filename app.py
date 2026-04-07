@@ -3,8 +3,13 @@ from src.config import settings
 from src.db.session import get_session
 from src.db.seed import bootstrap
 from src.db import crud
-from src.services.health_index import calculate_its, its_status, its_forecast_curve_variant_b
-from src.services.prediction import baseline_rul_days, predict_failure_date
+from src.services.health_index import (
+    calculate_its,
+    its_status,
+    its_status_color,
+    its_forecast_curve_variant_b,
+)
+from src.services.prediction import predict_rul_days, predict_failure_date
 from src.ui.charts import plot_its_forecast
 
 st.set_page_config(page_title="EAM MVP", layout="wide")
@@ -45,7 +50,7 @@ try:
     status = its_status(its_percent)
 
     # базовый прогноз RUL (потом заменим на ML)
-    rul_days = baseline_rul_days(latest.temperature, latest.vibration, latest.operating_hours)
+    rul_days = predict_rul_days(latest.temperature, latest.vibration, latest.operating_hours)
     failure_dt = predict_failure_date(rul_days)
 
     # ===== Левая колонка: карточка + редактирование =====
@@ -75,7 +80,7 @@ try:
             new_its, new_parts = calculate_its(new_m.temperature, new_m.vibration, new_m.operating_hours)
             crud.save_health_index(db, selected.equipment_id, new_its, new_parts["s_temp"], new_parts["s_vib"], new_parts["s_hours"])
 
-            new_rul = baseline_rul_days(new_m.temperature, new_m.vibration, new_m.operating_hours)
+            new_rul = predict_rul_days(new_m.temperature, new_m.vibration, new_m.operating_hours)
             new_fail = predict_failure_date(new_rul)
             crud.save_prediction(db, selected.equipment_id, new_rul, new_fail, None, model_version="baseline-v1")
 
@@ -88,9 +93,27 @@ try:
 
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("ИТС", f"{its_percent:.1f}%")
-        k2.metric("Статус", status)
         k3.metric("RUL", f"{rul_days} дней")
         k4.metric("Дата возможного отказа", failure_dt.strftime("%Y-%m-%d"))
+
+        status_color = its_status_color(its_percent)
+        with k2:
+            st.markdown(
+                f"""
+                <div style="
+                    background-color:{status_color};
+                    color:white;
+                    padding:16px;
+                    border-radius:10px;
+                    text-align:center;
+                    font-weight:bold;
+                    font-size:18px;
+                ">
+                    Статус<br>{status}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         st.caption(f"Порог отказа: {settings.its_crit*100:.0f}% | Параметр деградации p={settings.degradation_p}")
 

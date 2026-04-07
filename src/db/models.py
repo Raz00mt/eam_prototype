@@ -61,3 +61,19 @@ class EquipmentPrediction(Base):
     model_version: Mapped[str] = mapped_column(String(50), nullable=False, default="baseline-v1")
 
     equipment = relationship("Equipment", back_populates="predictions")
+
+class EquipmentMLSample(Base):
+    __tablename__ = "equipment_ml_samples"
+
+    sample_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    equipment_id: Mapped[int] = mapped_column(ForeignKey("equipment.equipment_id"), index=True)
+
+    ts: Mapped["DateTime"] = mapped_column(DateTime, server_default=func.now(), index=True)
+
+    temperature: Mapped[float] = mapped_column(Float, nullable=False)
+    vibration: Mapped[float] = mapped_column(Float, nullable=False)
+    operating_hours: Mapped[float] = mapped_column(Float, nullable=False)
+    pressure: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    health_index: Mapped[float] = mapped_column(Float, nullable=False)
+    rul_days: Mapped[int] = mapped_column(Integer, nullable=False)
