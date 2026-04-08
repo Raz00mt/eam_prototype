@@ -17,7 +17,7 @@ st.set_page_config(page_title="EAM MVP", layout="wide")
 # Инициализация БД + демо-данные
 bootstrap()
 
-st.title("Прототип ИС: мониторинг оборудования, ИТС и прогноз отказа")
+st.title("Мониторинг оборудования, ИТС и прогноз отказа")
 
 db = get_session()
 try:
@@ -68,7 +68,7 @@ try:
         m3.metric("Наработка", f"{latest.operating_hours:.0f} ч")
 
         st.divider()
-        st.subheader("Ручное редактирование (создаёт новую запись)")
+        st.subheader("Ручное редактирование")
         with st.form("edit_form", clear_on_submit=False):
             t = st.number_input("Температура, °C", value=float(latest.temperature), step=0.5)
             v = st.number_input("Вибрация", value=float(latest.vibration), step=0.01, format="%.2f")
